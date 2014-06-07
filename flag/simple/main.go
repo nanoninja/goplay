@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // A simple flag
+// http://play.golang.org/p/KIDspLJZht
 
 // Define flags using flag.String():
 //  flag.String("yourFlagName", "yourDefaultValue", "Your message of help")
