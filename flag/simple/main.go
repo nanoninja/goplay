@@ -18,12 +18,12 @@
 package main
 
 import (
-	"flag"
-	"fmt"
+    "flag"
+    "fmt"
 )
 
 func main() {
-	username := flag.String("username", "Foo", "Enter your username")
-	flag.Parse()
-	fmt.Println("Your username is: ", *username)
+    username := flag.String("username", "Foo", "Enter your username")
+    flag.Parse()
+    fmt.Println("Your username is: ", *username)
 }

@@ -11,15 +11,15 @@
 package main
 
 import (
-	"fmt"
-	"os"
+    "fmt"
+    "os"
 )
 
 func main() {
-	// Set a key/value pair and display
-	os.Setenv("BAR", "10")
-	fmt.Println("The value of BAR is: ", os.Getenv("BAR"))
+    // Set a key/value pair and display
+    os.Setenv("BAR", "10")
+    fmt.Println("The value of BAR is: ", os.Getenv("BAR"))
 
-	// Get the value of FOO environment variable
-	fmt.Println("The value of FOO is: ", os.Getenv("FOO"))
+    // Get the value of FOO environment variable
+    fmt.Println("The value of FOO is: ", os.Getenv("FOO"))
 }
