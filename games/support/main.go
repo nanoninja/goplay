@@ -65,9 +65,8 @@ func (s *Support) Init() {
     s.AddResponse("Could you clarify?")
 }
 
-func play() {
-    support := NewSupport("Games Support")
-    support.Init()
+func (s *Support) play() {
+    s.Init()
 
     Welcome()
     var input string
@@ -79,11 +78,12 @@ func play() {
             Goodbye()
             break
         } else {
-            fmt.Println(support.GenerateResp())
+            fmt.Println(s.GenerateResp())
         }
     }
 }
 
 func main() {
-    play()
+    support := NewSupport("Games Support")
+    support.play()
 }
