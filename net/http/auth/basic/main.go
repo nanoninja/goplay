@@ -68,5 +68,6 @@ func main() {
 	auth := NewHttpBasicAuth(login, password)
 	fs := http.FileServer(http.Dir("/"))
 	handler := auth.BasicAuthHandler(fs)
+
 	http.ListenAndServe(fmt.Sprintf("%s:%d", "", port), handler)
 }
