@@ -5,11 +5,11 @@
 package main
 
 import (
-	"fmt"
-	jwt "github.com/dgrijalva/jwt-go"
-	"io/ioutil"
-	"net/http"
-	"time"
+    "fmt"
+    jwt "github.com/dgrijalva/jwt-go"
+    "io/ioutil"
+    "net/http"
+    "time"
 )
 
 // openssl genrsa -out demo.rsa 1024 # the 1024 is the size of the key we are generating
@@ -54,22 +54,22 @@ func jwtHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	login, password := r.FormValue("login"), r.FormValue("password")
+    login, password := r.FormValue("login"), r.FormValue("password")
 
-	if login == "foo" && password == "secret" {
-		fmt.Fprintf(w, "Connect\n")
+    if login == "foo" && password == "secret" {
+        fmt.Fprintf(w, "Connect\n")
 		// jwtHandler(w, r)
-	} else {
-		fmt.Fprintf(w, "Connect\n")
-	}
+    } else {
+        fmt.Fprintf(w, "Connect\n")
+    }
 
-	fmt.Fprintf(w, "Server start...\n")
-	fmt.Fprintf(w, login)
+    fmt.Fprintf(w, "Server start...\n")
+    fmt.Fprintf(w, login)
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.Handle("/login", http.HandlerFunc(handleLogin))
-	mux.Handle("/api", http.HandlerFunc(authHandler))
-	http.ListenAndServe(":8080", mux)
+    mux := http.NewServeMux()
+    mux.Handle("/login", http.HandlerFunc(handleLogin))
+    mux.Handle("/api", http.HandlerFunc(authHandler))
+    http.ListenAndServe(":8080", mux)
 }
