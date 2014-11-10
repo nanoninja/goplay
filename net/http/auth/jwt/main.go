@@ -46,11 +46,11 @@ func jwtHandler(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Bad request", 500)
     }
 
-	if token.Valid {
+    if token.Valid {
         fmt.Fprintf(w, "Yo man! ")
-	} else {
+    } else {
         fmt.Fprintf(w, "Bad ! ")
-	}
+    }
 }
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
