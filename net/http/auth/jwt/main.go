@@ -12,42 +12,44 @@ import (
 	"time"
 )
 
+// openssl genrsa -out demo.rsa 1024 # the 1024 is the size of the key we are generating
+// openssl rsa -in demo.rsa -pubout > demo.rsa.pub
 var (
-	privateKey []byte
-	publicKey  []byte
+    privateKey []byte
+    publicKey  []byte
 )
 
 func init() {
-	privateKey, _ = ioutil.ReadFile("keys/demo.rsa")
-	publicKey, _ = ioutil.ReadFile("keys/demo.rsa.pub")
+    privateKey, _ = ioutil.ReadFile("keys/demo.rsa")
+    publicKey, _ = ioutil.ReadFile("keys/demo.rsa.pub")
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request) {
-	token := jwt.New(jwt.GetSigningMethod("RS256"))
-	token.Claims["ID"] = "This is my super fake ID"
-	token.Claims["exp"] = time.Now().Unix() + 30
-	tokenString, _ := token.SignedString(privateKey)
+    token := jwt.New(jwt.GetSigningMethod("RS256"))
+    token.Claims["ID"] = "This is my super fake ID"
+    token.Claims["exp"] = time.Now().Unix() + 30
+    tokenString, _ := token.SignedString(privateKey)
 
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"token": %s}`, tokenString)
+    w.WriteHeader(http.StatusOK)
+    fmt.Fprintf(w, `{"token": %s}`, tokenString)
 }
 
 func jwtHandler(w http.ResponseWriter, r *http.Request) {
-	token, err := jwt.ParseFromRequest(r, func(token *jwt.Token) (interface{}, error) {
-		return publicKey, nil
-	})
+    token, err := jwt.ParseFromRequest(r, func(token *jwt.Token) (interface{}, error) {
+        return publicKey, nil
+    })
 
-	fmt.Println(err)
-	fmt.Println(token)
+    fmt.Println(err)
+    fmt.Println(token)
 
-	if err != nil {
-		http.Error(w, "Bad request", 500)
-	}
+    if err != nil {
+        http.Error(w, "Bad request", 500)
+    }
 
 	if token.Valid {
-		fmt.Fprintf(w, "Yo man! ")
+        fmt.Fprintf(w, "Yo man! ")
 	} else {
-		fmt.Fprintf(w, "Bad ! ")
+        fmt.Fprintf(w, "Bad ! ")
 	}
 }
 
