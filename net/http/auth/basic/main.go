@@ -5,69 +5,78 @@
 package main
 
 import (
-	"encoding/base64"
-	"flag"
-	"fmt"
-	"net/http"
-	"strings"
+    "encoding/base64"
+    "errors"
+    "flag"
+    "log"
+    "net/http"
+    "strings"
 )
 
 var (
-	login    string
-	password string
-	realm    string
-	port     int
+    ErrInvalidAuth = errors.New("Invalid auth")
+
+    login    = flag.String("login", "", "Define the login of the authentication")
+    password = flag.String("password", "", "Define the password of the authentication")
+    realm    = flag.String("realm", "", "Define the message of the prompt of the authentication")
+    addr     = flag.String("addr", "", "addr host:port")
 )
 
-func init() {
-	flag.StringVar(&login, "login", "", "Define the login of the authentication")
-	flag.StringVar(&password, "password", "", "Define the password of the authentication")
-	flag.StringVar(&realm, "realm", "Authenticate", "Define the message of the prompt of the authentication")
-	flag.IntVar(&port, "port", 8080, "Define the port of the server")
-	flag.Parse()
+type BasicAuth struct {
+    Login    string
+    Password string
+    Realm    string
 }
 
-type BasicAuthHttp struct {
-	Login    string
-	Password string
-	Realm    string
-	Handler  http.Handler
+func NewHttpBasicAuth(login, pass string) *BasicAuth {
+    return &BasicAuth{Login: login, Password: pass}
 }
 
-func NewHttpBasicAuth(login, pass string) *BasicAuthHttp {
-	return &BasicAuthHttp{Login: login, Password: pass}
+func (a *BasicAuth) Authenticate(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("WWW-Authenticate", "Basic realm=\""+a.Realm+"\"")
+    http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 }
 
-func (a *BasicAuthHttp) Authenticate(w http.ResponseWriter, code int) {
-	w.Header().Set("WWW-Authenticate", "Basic realm=\""+a.Realm+"\"")
-	http.Error(w, http.StatusText(code), code)
+func (a *BasicAuth) BasicAuthHandler(h http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        if a.ValidAuth(r) != nil {
+            a.Authenticate(w, r)
+        }
+    })
 }
 
-func (a *BasicAuthHttp) BasicAuthHandler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if auth := r.Header["Authorization"]; len(auth) > 0 {
-			token := strings.Replace(string(auth[0]), "Basic ", "", 1)
-			s, err := base64.StdEncoding.DecodeString(token)
-			if err != nil {
-				fmt.Println(err)
-			}
-			if parts := strings.Split(string(s), ":"); len(parts) == 2 {
-				if a.Login == parts[0] && a.Password == parts[1] {
-					h.ServeHTTP(w, r)
-				} else {
-					a.Authenticate(w, 401)
-				}
-			}
-		} else {
-			a.Authenticate(w, 401)
-		}
-	})
+func (a *BasicAuth) ValidAuth(r *http.Request) error {
+    s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+    if len(s) != 2 || s[0] != "Basic" {
+        return ErrInvalidAuth
+    }
+
+    b, err := base64.StdEncoding.DecodeString(s[1])
+    if err != nil {
+        return err
+    }
+
+    pair := strings.SplitN(string(b), ":", 2)
+    if len(pair) != 2 {
+        return ErrInvalidAuth
+    }
+
+    if a.Login == pair[0] && a.Password == pair[1] {
+        return nil
+    }
+
+    return ErrInvalidAuth
 }
 
 func main() {
-	auth := NewHttpBasicAuth(login, password)
-	fs := http.FileServer(http.Dir("/"))
-	handler := auth.BasicAuthHandler(fs)
+    flag.Parse()
 
-	http.ListenAndServe(fmt.Sprintf("%s:%d", "", port), handler)
+    auth := NewHttpBasicAuth(*login, *password)
+    fs := http.FileServer(http.Dir("/"))
+    handler := auth.BasicAuthHandler(fs)
+
+    err := http.ListenAndServe(*addr, handler)
+    if err != nil {
+        log.Fatalf(err.Error())
+    }
 }
