@@ -28,12 +28,12 @@ type BasicAuth struct {
     Realm    string
 }
 
-func NewHttpBasicAuth(login, pass string) *BasicAuth {
+func NewBasicAuth(login, pass string) *BasicAuth {
     return &BasicAuth{Login: login, Password: pass}
 }
 
 func (a *BasicAuth) Authenticate(w http.ResponseWriter, r *http.Request) {
-    w.Header().Set("WWW-Authenticate", "Basic realm=\""+a.Realm+"\"")
+    w.Header().Set("WWW-Authenticate", `Basic realm="`+a.Realm+`"`)
     http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 }
 
@@ -71,7 +71,7 @@ func (a *BasicAuth) ValidAuth(r *http.Request) error {
 func main() {
     flag.Parse()
 
-    auth := NewHttpBasicAuth(*login, *password)
+    auth := NewBasicAuth(*login, *password)
     fs := http.FileServer(http.Dir("/"))
     handler := auth.BasicAuthHandler(fs)
 
