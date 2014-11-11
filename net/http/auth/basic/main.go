@@ -20,6 +20,7 @@ var (
     password = flag.String("password", "", "Define the password of the authentication")
     realm    = flag.String("realm", "", "Define the message of the prompt of the authentication")
     addr     = flag.String("addr", "", "addr host:port")
+    dir      = flag.String("dir", ".", "Define the dirname of file server")
 )
 
 type BasicAuth struct {
@@ -41,6 +42,8 @@ func (a *BasicAuth) BasicAuthHandler(h http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         if a.ValidAuth(r) != nil {
             a.Authenticate(w, r)
+        } else {
+            h.ServeHTTP(w, r)
         }
     })
 }
@@ -72,7 +75,7 @@ func main() {
     flag.Parse()
 
     auth := NewBasicAuth(*login, *password)
-    fs := http.FileServer(http.Dir("/"))
+    fs := http.FileServer(http.Dir(*dir))
     handler := auth.BasicAuthHandler(fs)
 
     err := http.ListenAndServe(*addr, handler)
